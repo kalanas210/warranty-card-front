@@ -199,14 +199,12 @@ const QRCodeManagement: React.FC<QRCodeManagementProps> = ({ token, onStatsUpdat
     try {
       const batch = batches.find(b => b._id === batchId);
       if (!batch) return;
-      
       const product = products.find(p => p.productId === batch.productId);
       if (!product) return;
-      
-      const response = await fetch(`/api/admin/qrcodes/download-pdf/${product.productId}`, {
+      const duplicate = window.confirm('Do you want each QR code duplicated side-by-side on the PDF? Click OK for duplicate, Cancel for no duplicate.');
+      const response = await fetch(`/api/admin/qrcodes/download-pdf/${product.productId}?duplicate=${duplicate ? 'true' : 'false'}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -228,7 +226,7 @@ const QRCodeManagement: React.FC<QRCodeManagementProps> = ({ token, onStatsUpdat
       alert('Please select QR codes to download');
       return;
     }
-
+    const duplicate = window.confirm('Do you want each QR code duplicated side-by-side on the PDF? Click OK for duplicate, Cancel for no duplicate.');
     try {
       const response = await fetch('/api/admin/qrcodes/download-selected-pdf', {
         method: 'POST',
@@ -237,10 +235,10 @@ const QRCodeManagement: React.FC<QRCodeManagementProps> = ({ token, onStatsUpdat
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          qrIds: selectedQRCodes
+          qrIds: selectedQRCodes,
+          duplicate
         })
       });
-
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -266,7 +264,7 @@ const QRCodeManagement: React.FC<QRCodeManagementProps> = ({ token, onStatsUpdat
       alert('Please select QR codes to generate sticker sheet');
       return;
     }
-
+    const duplicate = window.confirm('Do you want each QR code duplicated side-by-side on the sticker sheet? Click OK for duplicate, Cancel for no duplicate.');
     try {
       const response = await fetch('/api/admin/qrcodes/sticker-sheet', {
         method: 'POST',
@@ -276,11 +274,11 @@ const QRCodeManagement: React.FC<QRCodeManagementProps> = ({ token, onStatsUpdat
         },
         body: JSON.stringify({
           qrIds: selectedQRCodes,
-          verticalSpacing: 0.05, // 0.05 inch vertical spacing
-          horizontalSpacing: 0   // 0 inch horizontal spacing (stickers touch)
+          verticalSpacing: 0.05,
+          horizontalSpacing: 0,
+          duplicate
         })
       });
-
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
